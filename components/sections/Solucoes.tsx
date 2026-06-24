@@ -10,9 +10,10 @@ type Solution = {
   key: string;
   title: string;
   bg: string;
-  el: string;
-  /** origem da entrada do elemento (a saída é o inverso) */
-  enter: { x?: string; y?: string };
+  /** elemento por cima do fundo; opcional (soluções só-fundo não têm) */
+  el?: string;
+  /** origem da entrada do elemento (a saída é o inverso); só com `el` */
+  enter?: { x?: string; y?: string };
   align: Align; // alinhamento do título grande
   corner: Corner; // canto do descritivo
   desc: JSX.Element;
@@ -83,6 +84,23 @@ const SOLUTIONS: Solution[] = [
     ),
   },
   {
+    key: "trafego",
+    title: "Tráfego",
+    bg: "/solucoes/fundo-trafego.jpg",
+    // só-fundo (sem elemento por cima)
+    align: "center",
+    corner: "bc",
+    // RASCUNHO — revisar/substituir pelo texto final do Tráfego
+    desc: (
+      <>
+        Campanhas de <strong>mídia paga</strong> que levam a marca às{" "}
+        <strong>pessoas certas</strong> — <strong>alcance</strong>,{" "}
+        <strong>leads</strong> e <strong>vendas</strong> com{" "}
+        <strong>previsibilidade</strong>.
+      </>
+    ),
+  },
+  {
     key: "crm",
     title: "CRM",
     bg: "/solucoes/crmfundo.png",
@@ -135,8 +153,8 @@ export default function Solucoes() {
     }));
 
     const origin = (i: number) => ({
-      x: SOLUTIONS[i].enter.x ?? 0,
-      y: SOLUTIONS[i].enter.y ?? 0,
+      x: SOLUTIONS[i].enter?.x ?? 0,
+      y: SOLUTIONS[i].enter?.y ?? 0,
     });
     // x de cada letra = distância (com sinal) do centro da palavra (tracking)
     const charX = (chars: HTMLElement[]) => {
@@ -149,7 +167,7 @@ export default function Solucoes() {
       gsap.set(L.bg, { opacity: i === 0 ? 1 : 0 });
       gsap.set(L.desc, { opacity: 0 });
       gsap.set(L.chars, { opacity: 0 });
-      gsap.set(L.el, { opacity: 0, ...origin(i) });
+      if (L.el) gsap.set(L.el, { opacity: 0, ...origin(i) });
     });
     gsap.set(introChars, { opacity: 0, z: INTRO_Z });
 
@@ -210,12 +228,13 @@ export default function Solucoes() {
         t
       );
       tl.to(L.desc, { opacity: 1, duration: 1, ease: "none" }, t);
-      tl.fromTo(
-        L.el,
-        { opacity: 0, ...origin(i) },
-        { opacity: 1, x: 0, y: 0, duration: 1, ease: "power2.out" },
-        t
-      );
+      if (L.el)
+        tl.fromTo(
+          L.el,
+          { opacity: 0, ...origin(i) },
+          { opacity: 1, x: 0, y: 0, duration: 1, ease: "power2.out" },
+          t
+        );
     };
 
     // SAÍDA = inverso: tracking reabre + tudo some; elemento volta pra origem
@@ -234,7 +253,8 @@ export default function Solucoes() {
         t
       );
       tl.to(L.desc, { opacity: 0, duration: 1, ease: "none" }, t);
-      tl.to(L.el, { opacity: 0, ...origin(i), duration: 1, ease: "power2.in" }, t);
+      if (L.el)
+        tl.to(L.el, { opacity: 0, ...origin(i), duration: 1, ease: "power2.in" }, t);
     };
 
     // soluções deslocadas +STEP (o intro ocupa o 1º passo)
@@ -358,16 +378,19 @@ export default function Solucoes() {
                 </div>
 
                 {/* elemento que passa por cima do título (z2). O wrapper recebe
-                    o parallax; a <img> recebe a animação de entrada do scroll. */}
-                <div className="sol-el-wrap pointer-events-none absolute inset-0 z-[2] will-change-transform">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={s.el}
-                    alt={s.title}
-                    draggable={false}
-                    className="sol-el absolute inset-0 h-full w-full object-cover"
-                  />
-                </div>
+                    o parallax; a <img> recebe a animação de entrada do scroll.
+                    Soluções só-fundo (sem `el`) não renderizam esta camada. */}
+                {s.el && (
+                  <div className="sol-el-wrap pointer-events-none absolute inset-0 z-[2] will-change-transform">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={s.el}
+                      alt={s.title}
+                      draggable={false}
+                      className="sol-el absolute inset-0 h-full w-full object-cover"
+                    />
+                  </div>
+                )}
 
                 {/* descritivo no canto (z3) */}
                 <div
