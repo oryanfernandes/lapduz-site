@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { useGsap, gsap } from "@/lib/useGsap";
+import { splitWordsAndChars } from "@/lib/splitText";
 
 const FRASES = [
   "Somos o novo marketing",
@@ -42,11 +43,35 @@ export default function Frases() {
       },
     });
     const frases = ref.current.querySelectorAll<HTMLElement>(".frase");
-    // estado inicial: centrado com xPercent:-50, deslocado pra baixo e invisível
-    gsap.set(frases, { xPercent: -50, y: 40, opacity: 0 });
+    // estado inicial: container centrado (xPercent:-50) e invisível
+    gsap.set(frases, { xPercent: -50, opacity: 0 });
+
+    // mesmo char-reveal dos Pilares: cada letra acende com flash verde
+    // fluorescente antes de assentar no verde-escuro.
+    const charsByFrase = Array.from(frases).map((f) => {
+      splitWordsAndChars(f);
+      const chars = f.querySelectorAll<HTMLElement>(".char-reveal");
+      gsap.set(chars, { opacity: 0.2, color: "#152b1f" });
+      return chars;
+    });
+
     frases.forEach((f, i) => {
-      tl.to(f, { opacity: 1, y: 0, duration: 1 });
-      if (i < frases.length - 1) tl.to(f, { opacity: 0, y: -40, duration: 1 });
+      // entrada: mostra o container e revela as letras (verde → verde-escuro)
+      tl.set(f, { opacity: 1 });
+      tl.fromTo(
+        charsByFrase[i],
+        { opacity: 0.2, color: "#152b1f" },
+        {
+          keyframes: [
+            { opacity: 1, color: "#39ff14", duration: 0.3 },
+            { color: "#152b1f", duration: 0.7 },
+          ],
+          stagger: 0.05,
+          ease: "none",
+        }
+      );
+      // saída (menos a última): some o container pro próximo entrar
+      if (i < frases.length - 1) tl.to(f, { opacity: 0, duration: 1 });
     });
 
     // Diamantes: posição + escala + blur + rotação animadas via CSS vars
