@@ -1,7 +1,50 @@
-node_modules
-.next
-out
+# Dependências
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Build / saída do Next.js
+/.next/
+/out/
+/build
+/dist
+
+# Produção
+*.tsbuildinfo
+next-env.d.ts
+
+# Variáveis de ambiente (segredos — nunca subir)
 .env
 .env.local
-.DS_Store
+.env.development.local
+.env.test.local
+.env.production.local
+# (mantém o .env.example versionado como referência)
+
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Cobertura de testes
+/coverage
+
+# Deploy / Vercel
+.vercel
+
+# Cache
+.cache
+.eslintcache
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.swp
