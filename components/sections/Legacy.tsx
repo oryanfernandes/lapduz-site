@@ -7,11 +7,6 @@ type Item = { img: string; date: string; title: string };
 
 const ITEMS: Item[] = [
   {
-    img: "https://lapduz.com/wp-content/uploads/2026/04/Registrar-a-renovacao-de-votos-do-Thiago-e-da-Maira-foi-mais-do-que-um-trabalho-foi-uma-experie-1.jpg",
-    date: "10 de Outubro, 2025",
-    title: "Casamento — Primo Rico e Mayra Cardi",
-  },
-  {
     img: "https://lapduz.com/wp-content/uploads/2026/04/Alguns-cliques-do-Evento-Governe-com-@pablomarcal1-em-Joinville-Um-evento-pra-quem-quer-realment.jpg",
     date: "20 de Abril, 2025",
     title: "Evento Governar — Pablo Marçal",
