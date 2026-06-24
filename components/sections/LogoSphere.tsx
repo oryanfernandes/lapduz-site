@@ -11,7 +11,7 @@ const LOGOS: { img: string; link: string }[] = [
   { img: "https://lapduz.com/wp-content/uploads/2026/03/transface.png",    link: "https://www.instagram.com/transfacetransportes/" },
   { img: "https://lapduz.com/wp-content/uploads/2026/03/zapad.png",        link: "https://www.instagram.com/zapadlab/" },
   { img: "https://lapduz.com/wp-content/uploads/2026/03/omni.png",         link: "https://www.instagram.com/agenteomniararaquara/" },
-  { img: "https://lapduz.com/wp-content/uploads/2026/03/Arthur.png",       link: "https://www.instagram.com/arthuraguiar/" },
+  { img: "/globologos/arthur.png",                                         link: "https://www.instagram.com/arthuraguiar/" },
   { img: "https://lapduz.com/wp-content/uploads/2026/03/sofer.png",        link: "https://www.instagram.com/soferagroindustrial/" },
   { img: "https://lapduz.com/wp-content/uploads/2026/03/suprema.png",      link: "https://www.instagram.com/suprema.vidrosesquadrias/" },
 ];
@@ -84,8 +84,12 @@ export default function LogoSphere() {
     loader.crossOrigin = "anonymous";
 
     LOGOS.forEach((item, i) => {
-      const proxied = `/api/img?url=${encodeURIComponent(item.img)}`;
-      loader.load(proxied, (tex) => {
+      // Assets locais (ex: /globologos/arthur.png) carregam direto; só URLs
+      // externas passam pelo proxy /api/img (resolve CORS do WP do Lapduz).
+      const src = item.img.startsWith("http")
+        ? `/api/img?url=${encodeURIComponent(item.img)}`
+        : item.img;
+      loader.load(src, (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace;
         const material = new THREE.SpriteMaterial({
           map: tex,
