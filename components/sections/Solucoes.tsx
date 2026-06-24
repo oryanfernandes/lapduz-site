@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useGsap, gsap } from "@/lib/useGsap";
 
-type Corner = "bl" | "br";
+type Corner = "bl" | "br" | "bc";
 type Align = "left" | "center" | "right";
 
 type Solution = {
@@ -79,6 +79,24 @@ const SOLUTIONS: Solution[] = [
       <>
         Páginas <strong>interativas</strong>, <strong>premium</strong> e focadas
         em <strong>conversão</strong>.
+      </>
+    ),
+  },
+  {
+    key: "crm",
+    title: "CRM",
+    bg: "/solucoes/crmfundo.png",
+    el: "/solucoes/crm.png",
+    enter: { y: "12%" }, // baixo -> cima
+    align: "center",
+    corner: "bc",
+    // RASCUNHO — revisar/substituir pelo texto final do CRM
+    desc: (
+      <>
+        Gestão de relacionamento que transforma <strong>contatos</strong> em{" "}
+        <strong>clientes</strong> — <strong>organização</strong>,{" "}
+        <strong>automação</strong> e <strong>follow-up</strong> que aumentam suas{" "}
+        <strong>vendas</strong>.
       </>
     ),
   },
@@ -356,7 +374,11 @@ export default function Solucoes() {
                   className={`sol-desc absolute z-[3] max-w-[16rem] md:max-w-sm ${
                     s.corner === "bl"
                       ? "bottom-[9vh] left-[6vw] text-left"
-                      : "bottom-[9vh] right-[6vw] text-right"
+                      : s.corner === "br"
+                      ? "bottom-[9vh] right-[6vw] text-right"
+                      : // bc: centralizado horizontal (mx-auto, sem transform) na
+                        // mesma linha de baixo dos demais
+                        "bottom-[9vh] left-0 right-0 mx-auto text-center"
                   }`}
                 >
                   <p className="font-display text-sm font-medium leading-relaxed text-cream/85 md:text-base">
