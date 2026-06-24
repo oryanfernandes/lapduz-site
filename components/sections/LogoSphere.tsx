@@ -14,6 +14,7 @@ const LOGOS: { img: string; link: string }[] = [
   { img: "/globologos/arthur.png",                                         link: "https://www.instagram.com/arthuraguiar/" },
   { img: "https://lapduz.com/wp-content/uploads/2026/03/sofer.png",        link: "https://www.instagram.com/soferagroindustrial/" },
   { img: "https://lapduz.com/wp-content/uploads/2026/03/suprema.png",      link: "https://www.instagram.com/suprema.vidrosesquadrias/" },
+  { img: "/globologos/lumivie.png",                                        link: "https://www.instagram.com/lumivieclinique/" },
 ];
 
 /**
