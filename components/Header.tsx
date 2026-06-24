@@ -41,7 +41,7 @@ export default function Header() {
         const node = (el as HTMLElement).closest("[data-theme]") as HTMLElement | null;
         if (node?.dataset.theme === "dark" || node?.dataset.theme === "light") {
           nextTheme = node.dataset.theme as Theme;
-          niveis = node.id === "niveis";
+          niveis = node.id === "niveis" || node.id === "legado";
           break;
         }
       }
