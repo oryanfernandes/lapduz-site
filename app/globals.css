@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------ */
+/* Fonte da marca: Neue Haas      */
+/* ------------------------------ */
+@font-face {
+  font-family: "Neue Haas";
+  src: url("/fonts/NeueHaasDisplay-XThin.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Neue Haas";
+  src: url("/fonts/NeueHaasDisplay-Thin.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Neue Haas";
+  src: url("/fonts/NeueHaasDisplay-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Neue Haas";
+  src: url("/fonts/NeueHaasDisplay-Roman.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Neue Haas";
+  src: url("/fonts/NeueHaasDisplay-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Neue Haas";
+  src: url("/fonts/NeueHaasDisplay-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Neue Haas";
+  src: url("/fonts/NeueHaasDisplay-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-neue-haas: "Neue Haas", system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+}
+
+html,
+body {
+  background: #f8f5ec;
+  color: #152b1f;
+  font-family: var(--font-neue-haas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Char reveal — animação de cada letra dos títulos das 4 pilares */
+.char-reveal {
+  display: inline-block;
+  will-change: opacity, color, transform;
+}
+
+/* Esconder scrollbar visual quando Lenis está rodando */
+::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+/* Botão CTA pill (reaproveitado) */
+.cta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-family: var(--font-neue-haas);
+  font-weight: 500;
+  font-size: 16px;
+  color: #e8f5ec;
+  background: linear-gradient(135deg, #0f2d22, #1e5c3d);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25),
+    inset 0 0 20px rgba(255, 255, 255, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  border: none;
+}
+.cta-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+  color: #fff;
+}
+.cta-pill .cta-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.glass {
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Hide outline on mouse, keep on keyboard */
+:focus:not(:focus-visible) {
+  outline: none;
+}
