@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npx skills add https://github.com/google-gemini/gemini-cli --skill code-reviewer)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__javascript_tool",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing -TimeoutSec 15; \"Status: $\\($r.StatusCode\\), Length: $\\($r.Content.Length\\)\" } catch { \"ERROR: $_\" })",
+      "mcp__Claude_Preview__preview_start",
+      "WebFetch(domain:lapduz.com)",
+      "Bash(curl -sL -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://lapduz.com/remake-2\" -o /tmp/lapduz.html)",
+      "Read(//tmp/**)",
+      "Bash(curl -sL -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://lapduz.com/remake-2\" -o \"lapduz-source.html\")",
+      "Bash(npm install *)",
+      "Bash(npx next *)",
+      "Bash(curl -sI \"https://lapduz.com/wp-content/uploads/2026/03/acelera.png\")",
+      "Bash(ffmpeg -version)"
+    ]
+  }
+}
