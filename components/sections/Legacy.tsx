@@ -23,7 +23,7 @@ const ITEMS: Item[] = [
     title: "Lapduz chega em Interlagos",
   },
   {
-    img: "https://lapduz.com/wp-content/uploads/2026/04/Em-movimento…-🔥-1.jpg",
+    img: "/legado/arthur-clax.jpg",
     date: "01 de Março, 2026",
     title: "Arthur Aguiar no evento Clax Club",
   },
