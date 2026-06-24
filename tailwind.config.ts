@@ -29,6 +29,7 @@ const config: Config = {
       animation: {
         "fade-up": "fadeUp 0.7s ease-out both",
         "marquee": "marquee 40s linear infinite",
+        "glow": "glow 2.8s ease-in-out infinite",
       },
       keyframes: {
         fadeUp: {
@@ -38,6 +39,11 @@ const config: Config = {
         marquee: {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
+        },
+        // brilho pulsante (usado em marcos importantes do legado)
+        glow: {
+          "0%, 100%": { opacity: "0.4", transform: "scale(0.98)" },
+          "50%": { opacity: "0.85", transform: "scale(1.03)" },
         },
       },
     },

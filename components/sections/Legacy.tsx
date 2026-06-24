@@ -3,9 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger } from "@/lib/useGsap";
 
-type Item = { img: string; date: string; title: string };
+type Item = { img: string; date: string; title: string; featured?: boolean };
 
 const ITEMS: Item[] = [
+  {
+    img: "/legado/fachada.png",
+    date: "17 de Dezembro, 2024",
+    title: "A Lapduz se estabelece em Araraquara",
+    featured: true, // marco — recebe brilho em volta
+  },
   {
     img: "https://lapduz.com/wp-content/uploads/2026/04/Alguns-cliques-do-Evento-Governe-com-@pablomarcal1-em-Joinville-Um-evento-pra-quem-quer-realment.jpg",
     date: "20 de Abril, 2025",
@@ -233,13 +239,26 @@ export default function Legacy() {
                 transform: "translateY(-50%)",
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={it.img}
-                alt={it.title}
-                className="aspect-[4/5] w-full rounded-xl object-cover shadow-2xl ring-1 ring-cream/10"
-                loading="lazy"
-              />
+              <div className="relative">
+                {/* marco importante: halo dourado pulsante atrás do card */}
+                {it.featured && (
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute -inset-4 -z-10 rounded-2xl bg-fawn/40 blur-2xl animate-glow"
+                  />
+                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={it.img}
+                  alt={it.title}
+                  className={`aspect-[4/5] w-full rounded-xl object-cover shadow-2xl ${
+                    it.featured
+                      ? "ring-2 ring-fawn shadow-[0_0_40px_rgba(221,185,98,0.45)]"
+                      : "ring-1 ring-cream/10"
+                  }`}
+                  loading="lazy"
+                />
+              </div>
               <div>
                 <p className="text-[11px] uppercase tracking-[0.3em] text-fawn">
                   {it.date}
