@@ -51,7 +51,7 @@ export default function Frases() {
     const charsByFrase = Array.from(frases).map((f) => {
       splitWordsAndChars(f);
       const chars = f.querySelectorAll<HTMLElement>(".char-reveal");
-      gsap.set(chars, { opacity: 0.2, color: "#152b1f" });
+      gsap.set(chars, { opacity: 0, color: "#152b1f" });
       return chars;
     });
 
@@ -60,7 +60,7 @@ export default function Frases() {
       tl.set(f, { opacity: 1 });
       tl.fromTo(
         charsByFrase[i],
-        { opacity: 0.2, color: "#152b1f" },
+        { opacity: 0, color: "#152b1f" },
         {
           keyframes: [
             { opacity: 1, color: "#39ff14", duration: 0.3 },
@@ -136,7 +136,7 @@ export default function Frases() {
           {FRASES.map((f) => (
             <h2
               key={f}
-              className="frase absolute left-1/2 max-w-[calc(100%-2.5rem)] font-display text-2xl font-light leading-tight text-forest sm:text-3xl md:max-w-[80%] md:text-5xl lg:text-6xl"
+              className="frase absolute left-1/2 max-w-[calc(100%-4rem)] font-display text-3xl font-light leading-tight text-forest sm:text-4xl md:max-w-[72%] md:text-6xl lg:text-7xl"
               style={{ opacity: 0 }}
             >
               {f}

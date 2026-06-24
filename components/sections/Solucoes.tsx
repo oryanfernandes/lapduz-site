@@ -131,7 +131,10 @@ const ENTER = 1; // duração da animação de entrada/saída
 const HOLD = 1; // respiro: tempo parado antes de sair
 const STEP = ENTER + HOLD;
 const SPREAD = 22; // px de "tracking" inicial por letra, por distância do centro
-const INTRO_Z = 460; // translateZ inicial do título "Soluções" (vem perto da câmera)
+// translateZ inicial do título "Soluções". Maior que a perspective (900px do
+// .sol-intro) → começa ATRÁS da câmera (invisível) e atravessa o plano vindo
+// pra frente, dando a sensação de passar pela câmera antes de assentar.
+const INTRO_Z = 1100;
 
 export default function Solucoes() {
   const ref = useRef<HTMLDivElement>(null);
@@ -169,7 +172,7 @@ export default function Solucoes() {
       gsap.set(L.chars, { opacity: 0 });
       if (L.el) gsap.set(L.el, { opacity: 0, ...origin(i) });
     });
-    gsap.set(introChars, { opacity: 0, z: INTRO_Z });
+    gsap.set(introChars, { z: INTRO_Z }); // visível desde já; entra só pelo zoom 3D
 
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -184,12 +187,11 @@ export default function Solucoes() {
     });
 
     // INTRO "Soluções": char by char vindo de um z alto (3D, perto da câmera).
-    // Sem tracking na entrada.
+    // Sem tracking e SEM fade na entrada — aparece só pelo zoom 3D.
     tl.fromTo(
       introChars,
-      { opacity: 0, z: INTRO_Z },
+      { z: INTRO_Z },
       {
-        opacity: 1,
         z: 0,
         duration: 0.7,
         ease: "power3.out",
