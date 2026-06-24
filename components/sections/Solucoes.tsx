@@ -30,7 +30,7 @@ const SOLUTIONS: Solution[] = [
     corner: "bl",
     desc: (
       <>
-        Construir a <strong>identidade de uma marca</strong> — seu{" "}
+        Construir a <strong>identidade de uma marca</strong>: seu{" "}
         <strong>propósito</strong>, <strong>voz</strong> e{" "}
         <strong>percepção</strong>. O que faz ser{" "}
         <strong>reconhecida</strong>, <strong>lembrada</strong> e{" "}
@@ -94,7 +94,7 @@ const SOLUTIONS: Solution[] = [
     desc: (
       <>
         Campanhas de <strong>mídia paga</strong> que levam a marca às{" "}
-        <strong>pessoas certas</strong> — <strong>alcance</strong>,{" "}
+        <strong>pessoas certas</strong>. <strong>Alcance</strong>,{" "}
         <strong>leads</strong> e <strong>vendas</strong> com{" "}
         <strong>previsibilidade</strong>.
       </>
@@ -112,7 +112,7 @@ const SOLUTIONS: Solution[] = [
     desc: (
       <>
         Gestão de relacionamento que transforma <strong>contatos</strong> em{" "}
-        <strong>clientes</strong> — <strong>organização</strong>,{" "}
+        <strong>clientes</strong>. <strong>Organização</strong>,{" "}
         <strong>automação</strong> e <strong>follow-up</strong> que aumentam suas{" "}
         <strong>vendas</strong>.
       </>
