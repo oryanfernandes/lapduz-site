@@ -62,7 +62,7 @@ const SOLUTIONS: Solution[] = [
   },
   {
     key: "treinamento",
-    title: "Treinamento",
+    title: "Treinamento Comercial",
     bg: "/solucoes/fundo-treinamento.png",
     el: "/solucoes/treinamento.png",
     enter: { x: "12%" }, // igual ao branding
@@ -440,15 +440,32 @@ export default function Solucoes() {
                 >
                   <h3
                     aria-label={s.title}
-                    className={`whitespace-nowrap font-display text-[16vw] font-light leading-none text-cream/90 md:text-[13vw] ${
+                    className={`font-display text-[16vw] font-light leading-none text-cream/90 md:text-[13vw] ${
                       ALIGN[s.align].text
                     }`}
                   >
-                    {s.title.split("").map((ch, j) => (
-                      <span key={j} aria-hidden className="char inline-block">
-                        {ch === " " ? " " : ch}
-                      </span>
-                    ))}
+                    {/* quebra só ENTRE palavras: cada palavra é um bloco nowrap
+                        (as letras não quebram no meio); o espaço entre palavras
+                        é o único ponto de quebra. As letras seguem .char p/ animar. */}
+                    {s.title.split(" ").flatMap((word, wi, words) => {
+                      const w = (
+                        <span
+                          key={`w${wi}`}
+                          className="inline-block whitespace-nowrap"
+                        >
+                          {word.split("").map((ch, j) => (
+                            <span
+                              key={j}
+                              aria-hidden
+                              className="char inline-block"
+                            >
+                              {ch}
+                            </span>
+                          ))}
+                        </span>
+                      );
+                      return wi < words.length - 1 ? [w, " "] : [w];
+                    })}
                   </h3>
                 </div>
 
