@@ -199,7 +199,9 @@ export default function PillarsAndDiamond() {
           ease: "power2.inOut",
           scrollTrigger: {
             trigger: section,
-            start: "bottom 140%", // últimos ~40vh, depois do 4º texto passar
+            // distribui o movimento por ~100vh (antes era ~40vh = rápido demais);
+            // mesmo ponto de chegada, mas bem mais lento/suave no scroll
+            start: "bottom 200%",
             end: "bottom bottom",
             scrub: true,
             invalidateOnRefresh: true,
