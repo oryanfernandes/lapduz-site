@@ -70,8 +70,10 @@ const SOLUTIONS: Solution[] = [
     corner: "bl",
     desc: (
       <>
-        Eleva a performance da equipe: <strong>habilidades de vendas</strong>,{" "}
-        <strong>comunicação</strong> e <strong>negociação</strong>.
+        Eleva a performance da equipe:{" "}
+        <strong>Habilidade de vendas de alto valor agregado</strong>,{" "}
+        <strong>funis</strong>, <strong>comunicação</strong> e{" "}
+        <strong>negociação</strong>.
       </>
     ),
   },
@@ -86,7 +88,8 @@ const SOLUTIONS: Solution[] = [
     desc: (
       <>
         Páginas <strong>interativas</strong>, <strong>premium</strong> e focadas
-        em <strong>conversão</strong>.
+        em <strong>conversão</strong> e elevar o{" "}
+        <strong>valor da sua marca</strong>.
       </>
     ),
   },
