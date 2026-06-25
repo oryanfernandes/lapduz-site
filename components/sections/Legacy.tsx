@@ -35,6 +35,11 @@ const ITEMS: Item[] = [
     title: "Arthur Aguiar no evento Clax Club",
   },
   {
+    img: "/legado/medicina-estetica.jpg",
+    date: "01 de Abril, 2026",
+    title: "Entramos no jogo com a Medicina Estética",
+  },
+  {
     cta: true,
     title: "Seja você parte do nosso legado também",
   },
