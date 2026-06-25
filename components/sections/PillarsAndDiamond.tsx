@@ -292,11 +292,11 @@ export default function PillarsAndDiamond() {
         </div>
       </div>
 
-      <div className="mx-auto grid h-full max-w-page grid-cols-1 px-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12">
+      <div className="mx-auto grid h-full max-w-page grid-cols-1 px-6 lg:grid-cols-[1fr_1fr] lg:gap-12">
         {/* ESQUERDA — textos. Gap menor no mobile pra não ter vão morto */}
         <div className="relative z-10 flex flex-col gap-[12vh] py-[14vh] lg:gap-[60vh] lg:py-[30vh]">
           {PILLARS.map((p) => (
-            <article key={p.n} className="max-w-2xl">
+            <article key={p.n} className="max-w-xl">
               <p className="text-xs font-medium uppercase tracking-[0.4em] text-fawn">
                 {p.n}
               </p>
