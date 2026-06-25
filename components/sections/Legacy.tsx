@@ -3,7 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap, ScrollTrigger } from "@/lib/useGsap";
 
-type Item = { img: string; date: string; title: string; featured?: boolean };
+type Item = {
+  img?: string;
+  date?: string;
+  title: string;
+  featured?: boolean;
+  /** card-convite no fim do mural (sem imagem/data) */
+  cta?: boolean;
+};
 
 const ITEMS: Item[] = [
   {
@@ -18,7 +25,7 @@ const ITEMS: Item[] = [
     title: "Evento Governar — Pablo Marçal",
   },
   {
-    img: "https://lapduz.com/wp-content/uploads/2026/04/A-Lapduz-esta-em-Interlagos-para-fazer-o-que-sempre-fez-de-melhor-acelerar-conexoes-que-movem-n.jpg",
+    img: "/legado/interlagos.webp",
     date: "24 de Novembro, 2025",
     title: "Lapduz chega em Interlagos",
   },
@@ -26,6 +33,10 @@ const ITEMS: Item[] = [
     img: "/legado/arthur-clax.jpg",
     date: "01 de Março, 2026",
     title: "Arthur Aguiar no evento Clax Club",
+  },
+  {
+    cta: true,
+    title: "Seja você parte do nosso legado também",
   },
 ];
 
@@ -119,9 +130,9 @@ export default function Legacy() {
     const buildPath = () => {
       const height = window.innerHeight;
       const cy = height / 2;
-      const pts = ITEMS.map((_, i) => ({
+      const pts = ITEMS.map((it, i) => ({
         x: m.sidePad + m.cardW / 2 + i * (m.cardW + m.gap),
-        y: cy + Y_OFFSETS[i % Y_OFFSETS.length] * m.yScale,
+        y: cy + (it.cta ? 0 : Y_OFFSETS[i % Y_OFFSETS.length]) * m.yScale,
       }));
       let d = `M ${pts[0].x} ${pts[0].y}`;
       for (let i = 1; i < pts.length; i++) {
@@ -228,45 +239,63 @@ export default function Legacy() {
 
         {ITEMS.map((it, i) => {
           const x = m.sidePad + i * (m.cardW + m.gap);
+          const yOff = it.cta ? 0 : Y_OFFSETS[i % Y_OFFSETS.length];
           return (
             <article
               key={i}
               className="absolute z-[2] flex flex-col gap-3"
               style={{
                 left: x,
-                top: `calc(50% + ${Y_OFFSETS[i % Y_OFFSETS.length] * m.yScale}px)`,
+                top: `calc(50% + ${yOff * m.yScale}px)`,
                 width: m.cardW,
                 transform: "translateY(-50%)",
               }}
             >
-              <div className="relative">
-                {/* marco importante: halo dourado pulsante atrás do card */}
-                {it.featured && (
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute -inset-4 -z-10 rounded-2xl bg-fawn/40 blur-2xl animate-glow"
-                  />
-                )}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={it.img}
-                  alt={it.title}
-                  className={`aspect-[4/5] w-full rounded-xl object-cover shadow-2xl ${
-                    it.featured
-                      ? "ring-2 ring-fawn shadow-[0_0_40px_rgba(221,185,98,0.45)]"
-                      : "ring-1 ring-cream/10"
-                  }`}
-                  loading="lazy"
-                />
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.3em] text-fawn">
-                  {it.date}
-                </p>
-                <h3 className="mt-1 font-display text-base font-light leading-snug md:text-lg">
-                  {it.title}
-                </h3>
-              </div>
+              {it.cta ? (
+                // convite final do mural — sem imagem, fecha a linha dourada
+                <div className="flex aspect-[4/5] w-full flex-col items-center justify-center rounded-xl border border-dashed border-fawn/50 bg-fawn/[0.06] px-6 text-center">
+                  <p className="text-[11px] uppercase tracking-[0.3em] text-fawn">
+                    O próximo capítulo
+                  </p>
+                  <h3 className="mt-3 font-display text-2xl font-light leading-snug text-cream md:text-3xl">
+                    {it.title}
+                  </h3>
+                  <span aria-hidden className="mt-6 text-2xl text-fawn">
+                    →
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="relative">
+                    {/* marco importante: halo dourado pulsante atrás do card */}
+                    {it.featured && (
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute -inset-4 -z-10 rounded-2xl bg-fawn/40 blur-2xl animate-glow"
+                      />
+                    )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={it.img}
+                      alt={it.title}
+                      className={`aspect-[4/5] w-full rounded-xl object-cover shadow-2xl ${
+                        it.featured
+                          ? "ring-2 ring-fawn shadow-[0_0_40px_rgba(221,185,98,0.45)]"
+                          : "ring-1 ring-cream/10"
+                      }`}
+                      loading="lazy"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-fawn">
+                      {it.date}
+                    </p>
+                    <h3 className="mt-1 font-display text-base font-light leading-snug md:text-lg">
+                      {it.title}
+                    </h3>
+                  </div>
+                </>
+              )}
             </article>
           );
         })}

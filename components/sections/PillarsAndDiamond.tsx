@@ -317,8 +317,10 @@ export default function PillarsAndDiamond() {
           ))}
         </div>
 
-        {/* DIREITA — canvas pinado via CSS sticky (não GSAP pin) */}
-        <div className="relative hidden lg:block">
+        {/* DIREITA — canvas pinado via CSS sticky (não GSAP pin).
+            self-start + altura < seção faz o sticky liberar antes do fim,
+            então o diamante "despina" e sobe um pouco antes no scroll. */}
+        <div className="relative hidden self-start lg:block lg:h-[415vh]">
           <div className="sticky top-0 flex h-screen items-center justify-center">
             <canvas
               ref={canvasRef}

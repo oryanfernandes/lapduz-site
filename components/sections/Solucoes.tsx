@@ -16,8 +16,15 @@ type Solution = {
   enter?: { x?: string; y?: string };
   align: Align; // alinhamento do título grande
   corner: Corner; // canto do descritivo
+  /** desenha a linha-gráfico (trim path em loop) atrás do título; só Tráfego */
+  line?: boolean;
   desc: JSX.Element;
 };
+
+// Path do "gráfico" do Tráfego — sobe e desce de ponta a ponta (0→1200).
+// pathLength=100 normaliza o comprimento pro tracinho percorrer via CSS.
+const GRAPH_D =
+  "M0,210 L90,150 L180,182 L270,96 L360,140 L450,72 L540,158 L630,108 L720,196 L810,80 L900,150 L990,64 L1080,168 L1170,118 L1200,150";
 
 const SOLUTIONS: Solution[] = [
   {
@@ -87,7 +94,8 @@ const SOLUTIONS: Solution[] = [
     key: "trafego",
     title: "Tráfego",
     bg: "/solucoes/fundo-trafego.jpg",
-    // só-fundo (sem elemento por cima)
+    // só-fundo (sem elemento por cima) + linha-gráfico animada atrás do título
+    line: true,
     align: "center",
     corner: "bc",
     // RASCUNHO — revisar/substituir pelo texto final do Tráfego
@@ -126,10 +134,12 @@ const ALIGN: Record<Align, { justify: string; text: string }> = {
   right: { justify: "justify-end", text: "text-right" },
 };
 
-// Tempo (em "unidades" de timeline) de cada fase.
-const ENTER = 1; // duração da animação de entrada/saída
-const HOLD = 1; // respiro: tempo parado antes de sair
-const STEP = ENTER + HOLD;
+// Tempo (em "unidades" de timeline) de cada fase. As transições são
+// ENCADEADAS (sem sobreposição): a próxima só entra depois que a anterior sai.
+const ENTER = 1; // duração da entrada
+const EXIT = 1; // duração da saída
+const HOLD = 1; // respiro parado, totalmente visível
+const GAP = 0.3; // respiro entre "anterior sumiu" e "próxima entra"
 const SPREAD = 22; // px de "tracking" inicial por letra, por distância do centro
 // translateZ inicial do título "Soluções". Maior que a perspective (900px do
 // .sol-intro) → começa ATRÁS da câmera (invisível) e atravessa o plano vindo
@@ -152,6 +162,7 @@ export default function Solucoes() {
       bg: slide.querySelector<HTMLElement>(".sol-bg"),
       el: slide.querySelector<HTMLElement>(".sol-el"),
       desc: slide.querySelector<HTMLElement>(".sol-desc"),
+      line: slide.querySelector<HTMLElement>(".sol-line"),
       chars: gsap.utils.toArray<HTMLElement>(".char", slide),
     }));
 
@@ -171,8 +182,29 @@ export default function Solucoes() {
       gsap.set(L.desc, { opacity: 0 });
       gsap.set(L.chars, { opacity: 0 });
       if (L.el) gsap.set(L.el, { opacity: 0, ...origin(i) });
+      if (L.line) gsap.set(L.line, { opacity: 0 });
     });
-    gsap.set(introChars, { z: INTRO_Z }); // visível desde já; entra só pelo zoom 3D
+    gsap.set(introChars, { z: INTRO_Z }); // entra pelo zoom 3D via ST própria (antes do pin)
+
+    // ENTRADA do "Soluções": zoom 3D (z alto -> 0) numa ScrollTrigger PRÓPRIA,
+    // que começa ANTES do pin — assim o título já vem entrando enquanto a seção
+    // ainda está chegando, em vez de só quando pina.
+    gsap.fromTo(
+      introChars,
+      { z: INTRO_Z },
+      {
+        z: 0,
+        ease: "power3.out",
+        stagger: { each: 0.06, from: "start" },
+        scrollTrigger: {
+          trigger: root,
+          start: "top 75%",
+          end: "top top",
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      }
+    );
 
     const tl = gsap.timeline({
       scrollTrigger: {
@@ -185,32 +217,6 @@ export default function Solucoes() {
         invalidateOnRefresh: true,
       },
     });
-
-    // INTRO "Soluções": char by char vindo de um z alto (3D, perto da câmera).
-    // Sem tracking e SEM fade na entrada — aparece só pelo zoom 3D.
-    tl.fromTo(
-      introChars,
-      { z: INTRO_Z },
-      {
-        z: 0,
-        duration: 0.7,
-        ease: "power3.out",
-        stagger: { each: 0.06, from: "start" },
-      },
-      0
-    );
-    // transição intro -> branding: o "Soluções" sai COM tracking
-    tl.to(
-      introChars,
-      {
-        opacity: 0,
-        x: charX(introChars),
-        duration: 0.6,
-        ease: "power3.in",
-        stagger: { each: 0.05, from: "edges" },
-      },
-      STEP
-    );
 
     // ENTRADA de cada solução: fundo (crossfade) + título char-by-char (tracking
     // fecha do centro) + descritivo + elemento (desliza da origem ao centro)
@@ -230,6 +236,7 @@ export default function Solucoes() {
         t
       );
       tl.to(L.desc, { opacity: 1, duration: 1, ease: "none" }, t);
+      if (L.line) tl.to(L.line, { opacity: 1, duration: 1, ease: "none" }, t);
       if (L.el)
         tl.fromTo(
           L.el,
@@ -242,7 +249,8 @@ export default function Solucoes() {
     // SAÍDA = inverso: tracking reabre + tudo some; elemento volta pra origem
     const exit = (i: number, t: number) => {
       const L = layers[i];
-      tl.to(L.bg, { opacity: 0, duration: 1, ease: "none" }, t);
+      // NÃO some o fundo: o próximo fundo entra POR CIMA (z maior), evitando um
+      // flash do verde entre as transições. Só o conteúdo (título/desc/el) sai.
       tl.to(
         L.chars,
         {
@@ -255,14 +263,36 @@ export default function Solucoes() {
         t
       );
       tl.to(L.desc, { opacity: 0, duration: 1, ease: "none" }, t);
+      if (L.line) tl.to(L.line, { opacity: 0, duration: 1, ease: "none" }, t);
       if (L.el)
         tl.to(L.el, { opacity: 0, ...origin(i), duration: 1, ease: "power2.in" }, t);
     };
 
-    // soluções deslocadas +STEP (o intro ocupa o 1º passo)
+    // SEQUÊNCIA encadeada (sem sobreposição): segura o intro, ele SAI por
+    // completo, só então a 1ª solução ENTRA — e assim por diante.
+    let t = HOLD; // segura o "Soluções" antes de sair
+
+    // intro "Soluções" sai COM tracking (o z já foi resolvido pela ST pré-pin)
+    tl.to(
+      introChars,
+      {
+        opacity: 0,
+        x: charX(introChars),
+        duration: 0.6,
+        ease: "power3.in",
+        stagger: { each: 0.05, from: "edges" },
+      },
+      t
+    );
+    t += EXIT + GAP; // espera o intro sumir + respiro
+
     SOLUTIONS.forEach((_, i) => {
-      enter(i, (i + 1) * STEP);
-      if (i < SOLUTIONS.length - 1) exit(i, (i + 2) * STEP);
+      enter(i, t);
+      t += ENTER + HOLD; // entra e segura visível
+      if (i < SOLUTIONS.length - 1) {
+        exit(i, t);
+        t += EXIT + GAP; // espera sair por completo + respiro antes da próxima
+      }
     });
     // respiro final antes de soltar o pin
     tl.to({}, { duration: HOLD });
@@ -358,6 +388,46 @@ export default function Solucoes() {
                   draggable={false}
                   className="sol-bg absolute inset-0 z-0 h-full w-full object-cover"
                 />
+
+                {/* linha-gráfico (trim path em loop) — acima do fundo (z0,
+                    depois do bg no DOM) e abaixo do título (z1). Full-width de
+                    ponta a ponta; no mobile mantém o tamanho e corta as laterais. */}
+                {s.line && (
+                  <div
+                    aria-hidden
+                    className="sol-line pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden"
+                  >
+                    <svg
+                      className="block h-[38vh] w-full min-w-[1100px] md:min-w-0"
+                      viewBox="0 0 1200 300"
+                      preserveAspectRatio="none"
+                      fill="none"
+                    >
+                      {/* trilho fraco (o "gráfico") */}
+                      <path
+                        d={GRAPH_D}
+                        pathLength={100}
+                        stroke="#ddb962"
+                        strokeOpacity="0.18"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      {/* tracinho que percorre o path em loop */}
+                      <path
+                        className="sol-line-dash"
+                        d={GRAPH_D}
+                        pathLength={100}
+                        stroke="#f2da92"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </svg>
+                  </div>
+                )}
 
                 {/* título grande ao fundo (z1) — char by char */}
                 <div

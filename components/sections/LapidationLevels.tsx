@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { gsap } from "@/lib/useGsap";
+import { gsap, ScrollTrigger } from "@/lib/useGsap";
 import VantaNet from "@/components/VantaNet";
 
 type Level = {
@@ -40,6 +40,11 @@ export default function LapidationLevels() {
   const sectionRef = useRef<HTMLElement>(null);
   const camOuterRef = useRef<HTMLDivElement>(null); // parallax do mouse
   const camInnerRef = useRef<HTMLDivElement>(null); // shake idle
+
+  // aviso que segue o cursor ("Clique nas plaquinhas")
+  const hintRef = useRef<HTMLDivElement>(null);
+  const hintDoneRef = useRef(false); // true após clicar numa placa ou sair da seção
+  const dismissHintRef = useRef<(() => void) | null>(null);
 
   const [expanded, setExpanded] = useState(false);
   const [active, setActive] = useState(0);
@@ -95,6 +100,62 @@ export default function LapidationLevels() {
     return () => {
       removeMove?.();
       ctx.revert();
+    };
+  }, []);
+
+  // aviso que segue o cursor: "Clique nas plaquinhas". Some ao clicar em
+  // qualquer placa OU ao sair da seção no scroll. Só em ponteiro fino (mouse).
+  useEffect(() => {
+    const el = hintRef.current;
+    const section = sectionRef.current;
+    if (!el || !section) return;
+    if (!window.matchMedia("(pointer: fine)").matches) return;
+
+    el.style.display = "block";
+    gsap.set(el, { yPercent: -50, autoAlpha: 0 });
+
+    const xTo = gsap.quickTo(el, "x", { duration: 0.18, ease: "power3" });
+    const yTo = gsap.quickTo(el, "y", { duration: 0.18, ease: "power3" });
+
+    let shown = false;
+    const onMove = (e: PointerEvent) => {
+      if (hintDoneRef.current) return;
+      xTo(e.clientX + 18);
+      yTo(e.clientY);
+      if (!shown) {
+        shown = true;
+        gsap.to(el, { autoAlpha: 1, duration: 0.2 });
+      }
+    };
+    const onLeave = () => {
+      shown = false;
+      if (!hintDoneRef.current) gsap.to(el, { autoAlpha: 0, duration: 0.2 });
+    };
+
+    const dismiss = () => {
+      if (hintDoneRef.current) return;
+      hintDoneRef.current = true;
+      gsap.to(el, { autoAlpha: 0, duration: 0.3 });
+    };
+    dismissHintRef.current = dismiss;
+
+    section.addEventListener("pointermove", onMove);
+    section.addEventListener("pointerleave", onLeave);
+
+    // some de vez ao sair da seção no scroll (pra baixo ou voltando pra cima)
+    const st = ScrollTrigger.create({
+      trigger: section,
+      start: "top bottom",
+      end: "bottom top",
+      onLeave: dismiss,
+      onLeaveBack: dismiss,
+    });
+
+    return () => {
+      section.removeEventListener("pointermove", onMove);
+      section.removeEventListener("pointerleave", onLeave);
+      st.kill();
+      dismissHintRef.current = null;
     };
   }, []);
 
@@ -184,6 +245,7 @@ export default function LapidationLevels() {
                   onMouseEnter={() => setHovered(i)}
                   onMouseLeave={() => setHovered(null)}
                   onClick={() => {
+                    dismissHintRef.current?.();
                     setActive(i);
                     setExpanded(true);
                   }}
@@ -219,6 +281,11 @@ export default function LapidationLevels() {
             ))}
           </div>
         </div>
+
+        {/* detalhe abaixo das placas */}
+        <p className="pointer-events-none absolute inset-x-0 bottom-[6vh] z-[1] mx-auto max-w-md px-6 text-center font-display text-base font-light text-[#152b1f]/70 md:bottom-[8vh] md:text-xl">
+          Qual será seu próximo nível de lapidação com a Lapduz?
+        </p>
       </div>
 
       {/* VISÃO AMPLIADA — fora da câmera, sem shake */}
@@ -264,6 +331,16 @@ export default function LapidationLevels() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* aviso que segue o cursor — habilitado via JS só em ponteiro fino */}
+      <div
+        ref={hintRef}
+        aria-hidden
+        className="pointer-events-none fixed left-0 top-0 z-[99999] hidden whitespace-nowrap text-[15px] font-medium text-white"
+        style={{ mixBlendMode: "difference" }}
+      >
+        Clique nas plaquinhas
       </div>
     </section>
   );

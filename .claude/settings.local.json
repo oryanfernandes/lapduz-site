@@ -15,7 +15,9 @@
       "Bash(npm install *)",
       "Bash(npx next *)",
       "Bash(curl -sI \"https://lapduz.com/wp-content/uploads/2026/03/acelera.png\")",
-      "Bash(ffmpeg -version)"
+      "Bash(ffmpeg -version)",
+      "PowerShell(npx tsc --noEmit 2>&1)",
+      "PowerShell(npx tsc --noEmit 2>&1 | Select-Object -First 30; Write-Output \"exit:$LASTEXITCODE\")"
     ]
   }
 }

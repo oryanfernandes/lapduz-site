@@ -92,6 +92,27 @@ html.lenis body {
   will-change: opacity, color, transform;
 }
 
+/* Tráfego — tracinho percorrendo o gráfico em loop (trim path).
+   dasharray soma 100 (= pathLength) → 1 traço visível por vez; deslocar o
+   offset em 1 período inteiro deixa o loop contínuo (sem salto). */
+@keyframes solLineDash {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.sol-line-dash {
+  stroke-dasharray: 16 84;
+  animation: solLineDash 5s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sol-line-dash {
+    animation: none;
+  }
+}
+
 /* Esconder scrollbar visual quando Lenis está rodando */
 ::-webkit-scrollbar {
   width: 0;
