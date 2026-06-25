@@ -25,9 +25,31 @@ const ITEMS: Item[] = [
     title: "Evento Governar — Pablo Marçal",
   },
   {
+    img: "/legado/pbr.jpg",
+    date: "Agosto, 2025",
+    title: "Cobrimos o Rodeio de Araras, PBR",
+  },
+  {
+    img: "/legado/conemag.jpg",
+    date: "Setembro, 2025",
+    title: "VFX desafiador para Conemag",
+  },
+  {
+    img: "/legado/sofer.png",
+    date: "Outubro, 2025",
+    title: "Possibilitamos uma venda de 8 milhões para Sofer",
+    featured: true, // marco — recebe brilho em volta
+  },
+  {
     img: "/legado/interlagos.webp",
     date: "24 de Novembro, 2025",
     title: "Lapduz chega em Interlagos",
+  },
+  {
+    img: "/legado/transface.png",
+    date: "11 de Fevereiro, 2026",
+    title: "Parceria com a Transface, empresa com 36 anos de mercado",
+    featured: true, // marco — recebe brilho em volta
   },
   {
     img: "/legado/arthur-clax.jpg",
