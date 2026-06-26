@@ -235,15 +235,6 @@ export default function Legacy() {
         Legado
       </span>
 
-      <div className="absolute left-6 top-28 z-10 md:left-8 min-[1700px]:top-8">
-        <p className="text-xs uppercase tracking-[0.4em] text-cream/60">
-          Legado
-        </p>
-        <h2 className="mt-2 font-display text-3xl font-light md:text-5xl">
-          Mural de conquistas
-        </h2>
-      </div>
-
       <div
         ref={trackRef}
         className="relative h-screen will-change-transform"
