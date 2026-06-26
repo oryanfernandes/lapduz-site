@@ -18,6 +18,9 @@ type Solution = {
   corner: Corner; // canto do descritivo
   /** desenha a linha-gráfico (trim path em loop) atrás do título; só Tráfego */
   line?: boolean;
+  /** classe Tailwind de object-position só no mobile (ex: "object-[25%_center]")
+   *  pra reposicionar o recorte do elemento horizontalmente. Desktop fica center. */
+  objPosMobile?: string;
   desc: JSX.Element;
 };
 
@@ -53,6 +56,7 @@ const SOLUTIONS: Solution[] = [
     enter: { y: "12%" }, // baixo -> cima
     align: "right",
     corner: "br",
+    objPosMobile: "object-[41%_center]", // mobile: traz o elemento mais pra direita
     desc: (
       <>
         Conteúdo <strong>premium</strong>, <strong>estratégico</strong> e feito
@@ -68,6 +72,7 @@ const SOLUTIONS: Solution[] = [
     enter: { x: "12%" }, // igual ao branding
     align: "center",
     corner: "bl",
+    objPosMobile: "object-[90%_center]", // mobile: puxa o elemento mais pra esquerda
     desc: (
       <>
         Eleva a performance da equipe:{" "}
@@ -494,14 +499,17 @@ export default function Solucoes() {
                       src={s.el}
                       alt={s.title}
                       draggable={false}
-                      className="sol-el absolute inset-0 h-full w-full object-cover"
+                      className={`sol-el absolute inset-0 h-full w-full object-cover ${
+                        s.objPosMobile ? `${s.objPosMobile} md:object-center` : ""
+                      }`}
                     />
                   </div>
                 )}
 
-                {/* descritivo no canto (z3) */}
+                {/* descritivo no canto — z acima do elemento (z2) pra nunca
+                    ser coberto pela imagem */}
                 <div
-                  className={`sol-desc absolute z-[3] max-w-[16rem] md:max-w-sm ${
+                  className={`sol-desc absolute z-[5] max-w-[16rem] md:max-w-sm ${
                     s.corner === "bl"
                       ? "bottom-[9vh] left-[6vw] text-left"
                       : s.corner === "br"
