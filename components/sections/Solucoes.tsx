@@ -86,10 +86,11 @@ const SOLUTIONS: Solution[] = [
     key: "salespage",
     title: "Sales Page",
     bg: "/solucoes/salespage-fundo.png",
-    el: "/solucoes/salespage.png",
+    el: "/solucoes/salespage.webm",
     enter: { x: "12%" }, // direita -> esquerda
     align: "right",
     corner: "br",
+    objPosMobile: "object-[5%_center]", // mobile: centraliza o celular (que fica à esquerda do frame)
     desc: (
       <>
         Páginas <strong>interativas</strong>, <strong>premium</strong> e focadas
@@ -454,14 +455,17 @@ export default function Solucoes() {
 
                 {/* título grande ao fundo (z1) — char by char */}
                 <div
-                  className={`sol-title pointer-events-none absolute inset-0 z-[1] flex items-center px-[6vw] ${
-                    ALIGN[s.align].justify
+                  className={`sol-title pointer-events-none absolute inset-0 z-[1] flex px-[6vw] ${
+                    s.key === "salespage"
+                      ? // mobile: título no canto inferior-esquerdo; desktop: como era
+                        "items-end justify-start pb-[20vh] md:items-center md:justify-end md:pb-0"
+                      : `items-center ${ALIGN[s.align].justify}`
                   }`}
                 >
                   <h3
                     aria-label={s.title}
                     className={`font-display text-[16vw] font-light leading-none text-cream/90 md:text-[13vw] ${
-                      ALIGN[s.align].text
+                      s.key === "salespage" ? "text-left md:text-right" : ALIGN[s.align].text
                     }`}
                   >
                     {/* quebra só ENTRE palavras: cada palavra é um bloco nowrap
@@ -484,7 +488,11 @@ export default function Solucoes() {
                           ))}
                         </span>
                       );
-                      return wi < words.length - 1 ? [w, " "] : [w];
+                      return wi < words.length - 1
+                        ? s.key === "salespage"
+                          ? [w, " ", <br key={`br${wi}`} className="md:hidden" />]
+                          : [w, " "]
+                        : [w];
                     })}
                   </h3>
                 </div>
@@ -494,15 +502,29 @@ export default function Solucoes() {
                     Soluções só-fundo (sem `el`) não renderizam esta camada. */}
                 {s.el && (
                   <div className="sol-el-wrap pointer-events-none absolute inset-0 z-[2] will-change-transform">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={s.el}
-                      alt={s.title}
-                      draggable={false}
-                      className={`sol-el absolute inset-0 h-full w-full object-cover ${
-                        s.objPosMobile ? `${s.objPosMobile} md:object-center` : ""
-                      }`}
-                    />
+                    {/^.+\.(webm|mp4)$/.test(s.el) ? (
+                      <video
+                        src={s.el}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        preload="auto"
+                        className={`sol-el absolute inset-0 h-full w-full object-cover ${
+                          s.objPosMobile ? `${s.objPosMobile} md:object-center` : ""
+                        }`}
+                      />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={s.el}
+                        alt={s.title}
+                        draggable={false}
+                        className={`sol-el absolute inset-0 h-full w-full object-cover ${
+                          s.objPosMobile ? `${s.objPosMobile} md:object-center` : ""
+                        }`}
+                      />
+                    )}
                   </div>
                 )}
 
@@ -510,7 +532,10 @@ export default function Solucoes() {
                     ser coberto pela imagem */}
                 <div
                   className={`sol-desc absolute z-[5] max-w-[16rem] md:max-w-sm ${
-                    s.corner === "bl"
+                    s.key === "salespage"
+                      ? // mobile: canto inferior-esquerdo, à esquerda; desktop: canto direito
+                        "bottom-[6vh] left-[6vw] text-left md:bottom-[9vh] md:left-auto md:right-[6vw] md:text-right"
+                      : s.corner === "bl"
                       ? "bottom-[9vh] left-[6vw] text-left"
                       : s.corner === "br"
                       ? "bottom-[9vh] right-[6vw] text-right"
