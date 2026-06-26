@@ -6,6 +6,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
+  // Mobile: a barra de endereço aparecendo/sumindo dispara um "resize" que faz
+  // o ScrollTrigger recalcular os pins e te jogar pra outra seção (pulos ao
+  // scrollar, principalmente pra cima). Ignorar o resize mobile elimina isso.
+  ScrollTrigger.config({ ignoreMobileResize: true });
 }
 
 /**
