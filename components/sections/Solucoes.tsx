@@ -169,10 +169,14 @@ export default function Solucoes() {
       chars: gsap.utils.toArray<HTMLElement>(".char", slide),
     }));
 
-    const origin = (i: number) => ({
-      x: SOLUTIONS[i].enter?.x ?? 0,
-      y: SOLUTIONS[i].enter?.y ?? 0,
-    });
+    const isMobile = window.innerWidth < 768;
+    const origin = (i: number) => {
+      const s = SOLUTIONS[i];
+      // mobile: a Sales Page entra DE BAIXO PRA CIMA (workaround do corte
+      // lateral do shake em X). A saída é o inverso (volta pra baixo).
+      if (isMobile && s.key === "salespage") return { x: 0, y: "12%" };
+      return { x: s.enter?.x ?? 0, y: s.enter?.y ?? 0 };
+    };
     // x de cada letra = distância (com sinal) do centro da palavra (tracking)
     const charX = (chars: HTMLElement[]) => {
       const center = (chars.length - 1) / 2;
@@ -217,6 +221,7 @@ export default function Solucoes() {
         scrub: true,
         pin: pinEl,
         pinSpacing: true,
+        anticipatePin: 1, // pré-engata o pin pra não "travar" ao chegar na seção
         invalidateOnRefresh: true,
       },
     });
@@ -316,6 +321,11 @@ export default function Solucoes() {
     const elWraps = gsap.utils.toArray<HTMLElement>(".sol-el-wrap", root);
     if (!elWraps.length) return;
 
+    // mobile: shake horizontal quase nulo (o movimento em X é o que revela o
+    // corte lateral das imagens). Y fica normal.
+    const isMobile = window.innerWidth < 768;
+    const SHAKE_X_MUL = isMobile ? 0.12 : 1;
+
     // profundidade (quanto cada camada acompanha o shake/mouse)
     const DEPTH = { bg: 0.18, text: 0.55, el: 1 };
     const proxy = { sx: 0, sy: 0, mx: 0, my: 0 };
@@ -333,8 +343,12 @@ export default function Solucoes() {
     let tick: (() => void) | undefined;
 
     const ctx = gsap.context(() => {
-      // overscan só no fundo (que se move e poderia revelar a borda)
+      // overscan no fundo (que se move e poderia revelar a borda)
       gsap.set(bgs, { scale: 1.06, transformOrigin: "center" });
+      // overscan também nos elementos: eles se movem MAIS que o fundo
+      // (DEPTH.el=1), então sem folga o shake revela a borda da imagem (corte
+      // seco). A escala dá margem pra imagem cobrir o deslocamento.
+      gsap.set(elWraps, { scale: 1.08, transformOrigin: "center" });
 
       // shake idle (amplitude-base; cada camada multiplica pela profundidade)
       gsap
@@ -355,7 +369,7 @@ export default function Solucoes() {
 
       // aplica o offset-base a cada camada com seu multiplicador
       tick = () => {
-        const bx = proxy.sx + proxy.mx;
+        const bx = (proxy.sx + proxy.mx) * SHAKE_X_MUL;
         const by = proxy.sy + proxy.my;
         bgS.forEach((s) => (s.x(bx * DEPTH.bg), s.y(by * DEPTH.bg)));
         textS.forEach((s) => (s.x(bx * DEPTH.text), s.y(by * DEPTH.text)));
@@ -389,6 +403,7 @@ export default function Solucoes() {
                   alt=""
                   aria-hidden
                   draggable={false}
+                  decoding="async"
                   className="sol-bg absolute inset-0 z-0 h-full w-full object-cover"
                 />
 
