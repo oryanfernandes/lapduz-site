@@ -31,7 +31,7 @@ function PlaqueCard({ l }: { l: Level }) {
       alt={`Placa ${l.name} — faturamento ${l.value}`}
       draggable={false}
       loading="lazy"
-      className="h-full w-full select-none object-contain drop-shadow-[0_16px_40px_rgba(0,0,0,0.5)]"
+      className="h-full w-full select-none object-contain"
     />
   );
 }
