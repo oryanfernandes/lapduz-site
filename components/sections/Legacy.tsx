@@ -137,6 +137,10 @@ export default function Legacy() {
     yScale: 1,
   });
 
+  // vira true quando a linha dourada termina de chegar na borda do card-convite
+  const [plugged, setPlugged] = useState(false);
+  const pluggedRef = useRef(false);
+
   // recalcula métricas no mount e no resize
   useEffect(() => {
     const update = () => setM(getMetrics(window.innerWidth, window.innerHeight));
@@ -157,10 +161,15 @@ export default function Legacy() {
     const buildPath = () => {
       const height = window.innerHeight;
       const cy = height / 2;
-      const pts = ITEMS.map((it, i) => ({
-        x: m.sidePad + m.cardW / 2 + i * (m.cardW + m.gap),
-        y: cy + (it.cta ? 0 : Y_OFFSETS[i % Y_OFFSETS.length]) * m.yScale,
-      }));
+      const pts = ITEMS.map((it, i) => {
+        const left = m.sidePad + i * (m.cardW + m.gap);
+        return {
+          // CTA: a linha para na BORDA esquerda do card (não entra nele);
+          // os demais miram no centro do card.
+          x: it.cta ? left : left + m.cardW / 2,
+          y: cy + (it.cta ? 0 : Y_OFFSETS[i % Y_OFFSETS.length]) * m.yScale,
+        };
+      });
       let d = `M ${pts[0].x} ${pts[0].y}`;
       for (let i = 1; i < pts.length; i++) {
         const prev = pts[i - 1];
@@ -202,6 +211,14 @@ export default function Legacy() {
         start: "top top",
         end: () => `+=${dist}`,
         scrub: 0.4,
+        onUpdate: (self) => {
+          // "pluga" quando a linha praticamente chegou na borda do card final
+          const p = self.progress >= 0.99;
+          if (p !== pluggedRef.current) {
+            pluggedRef.current = p;
+            setPlugged(p);
+          }
+        },
       },
     });
 
@@ -270,17 +287,34 @@ export default function Legacy() {
               }}
             >
               {it.cta ? (
-                // convite final do mural — sem imagem, fecha a linha dourada
-                <div className="flex aspect-[4/5] w-full flex-col items-center justify-center rounded-xl border border-dashed border-fawn/50 bg-fawn/[0.06] px-6 text-center">
-                  <p className="text-[11px] uppercase tracking-[0.3em] text-fawn">
-                    O próximo capítulo
-                  </p>
-                  <h3 className="mt-3 font-display text-2xl font-light leading-snug text-cream md:text-3xl">
-                    {it.title}
-                  </h3>
-                  <span aria-hidden className="mt-6 text-2xl text-fawn">
-                    →
-                  </span>
+                // convite final do mural — a linha dourada "pluga" na borda
+                // esquerda; ao chegar, o card cresce um pouco (origin-left, pra
+                // não descolar da linha) e ganha o glow dos marcos importantes.
+                <div className="relative">
+                  {/* halo dourado pulsante — só quando a linha pluga */}
+                  {plugged && (
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute -inset-4 -z-10 rounded-2xl bg-fawn/40 blur-2xl animate-glow"
+                    />
+                  )}
+                  <div
+                    className={`flex aspect-[4/5] w-full origin-left flex-col items-center justify-center rounded-xl border border-dashed px-6 text-center transition-all duration-500 ${
+                      plugged
+                        ? "scale-105 border-fawn bg-fawn/[0.12] shadow-[0_0_40px_rgba(221,185,98,0.45)]"
+                        : "border-fawn/50 bg-fawn/[0.06]"
+                    }`}
+                  >
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-fawn">
+                      O próximo capítulo
+                    </p>
+                    <h3 className="mt-3 font-display text-2xl font-light leading-snug text-cream md:text-3xl">
+                      {it.title}
+                    </h3>
+                    <span aria-hidden className="mt-6 text-2xl text-fawn">
+                      →
+                    </span>
+                  </div>
                 </div>
               ) : (
                 <>

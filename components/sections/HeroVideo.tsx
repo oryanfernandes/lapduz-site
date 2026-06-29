@@ -68,10 +68,28 @@ export default function HeroVideo() {
       /* */
     }
 
+    // aplica no vídeo o frame correspondente ao progress (0..1) do scroll
+    const setFrame = (progress: number) => {
+      if (!video.duration) return;
+      const target = Math.max(0, Math.min(1, progress)) * video.duration;
+      if (Math.abs(target - lastTarget) < 0.015) return;
+      lastTarget = target;
+      try {
+        video.currentTime = target;
+      } catch {
+        /* */
+      }
+    };
+
     /**
      * Setup das ScrollTriggers — feito IMEDIATAMENTE, sem esperar o vídeo
      * carregar. Assim a fade do conteúdo funciona mesmo se o vídeo demorar
      * (ou nunca carregar, em devices muito restritos).
+     *
+     * onRefresh sincroniza o frame com a posição ATUAL do scroll — resolve o
+     * caso de recarregar no meio do site: ao voltar pra hero o vídeo já mostra
+     * o frame certo (o último, se a viewport está depois da hero), em vez de
+     * piscar o primeiro frame até o primeiro onUpdate.
      */
     const scrubTrigger = ScrollTrigger.create({
       trigger: section,
@@ -79,17 +97,8 @@ export default function HeroVideo() {
       end: "bottom bottom",
       scrub: 0.15,
       invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        if (!video.duration) return;
-        const target = self.progress * video.duration;
-        if (Math.abs(target - lastTarget) < 0.015) return;
-        lastTarget = target;
-        try {
-          video.currentTime = target;
-        } catch {
-          /* */
-        }
-      },
+      onUpdate: (self) => setFrame(self.progress),
+      onRefresh: (self) => setFrame(self.progress),
     });
 
     const fadeTrigger = gsap.fromTo(
@@ -143,11 +152,17 @@ export default function HeroVideo() {
         if (video.paused) await video.play();
         await new Promise<void>((r) => requestAnimationFrame(() => r()));
         video.pause();
-        video.currentTime = 0;
       } catch {
         /* autoplay bloqueado — segue mesmo assim */
       }
+      // sincroniza com o scroll atual (não zera): se recarregou depois da
+      // hero, fixa o último frame em vez do primeiro.
+      setFrame(scrubTrigger.progress);
     };
+
+    // assim que a duração é conhecida, já sincroniza o frame com o scroll
+    const onMeta = () => setFrame(scrubTrigger.progress);
+    video.addEventListener("loadedmetadata", onMeta);
 
     if (video.readyState >= 2) {
       warmup();
@@ -160,6 +175,7 @@ export default function HeroVideo() {
 
     return () => {
       video.removeEventListener("loadeddata", warmup);
+      video.removeEventListener("loadedmetadata", onMeta);
       scrubTrigger.kill();
       fadeTrigger?.kill();
       darkenTween?.scrollTrigger?.kill();
@@ -245,16 +261,6 @@ export default function HeroVideo() {
             {...({ "webkit-playsinline": "" } as Record<string, string>)}
           />
         )}
-
-        {/* overlay top→bottom pra contraste */}
-        <div
-          aria-hidden
-          className="absolute inset-0 z-[2]"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 35%, transparent 55%, rgba(0,0,0,0.55) 100%)",
-          }}
-        />
 
         {/* mobile: escurece o fundo pra leitura da headline; some no scroll
             (mesma janela do fade do conteúdo) devolvendo destaque ao vídeo */}

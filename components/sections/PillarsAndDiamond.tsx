@@ -256,16 +256,15 @@ export default function PillarsAndDiamond() {
       // mobile: altura natural (sem canvas precisa de bem menos)
       // desktop: 430vh (4 pilares * 100vh + buffer) via classe lg:!h-[430vh]
     >
-      {/* shape divider — triângulo no topo (1px de overlap pra esconder hairline) */}
-      <svg
+      {/* topo da seção: degradê do branco até a cor da seção (bone), no lugar
+          do antigo divisor em V — faz a transição suave vindo da hero */}
+      <div
         aria-hidden
-        className="absolute left-0 right-0 z-10 block w-full text-bone"
-        style={{ top: "-6vh", height: "calc(6vh + 2px)" }}
-        viewBox="0 0 1000 100"
-        preserveAspectRatio="none"
-      >
-        <path d="M500.2,94.7L0,0v100h1000V0L500.2,94.7z" fill="currentColor" />
-      </svg>
+        className="pointer-events-none absolute inset-x-0 top-0 z-10 h-[32vh]"
+        style={{
+          background: "linear-gradient(180deg, #ffffff 0%, #e8e6dc 100%)",
+        }}
+      />
 
       {/* UI lateral FIXED à esquerda — só desktop (no mobile os 01-04 já indicam progresso) */}
       <div
