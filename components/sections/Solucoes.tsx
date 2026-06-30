@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { useGsap, gsap } from "@/lib/useGsap";
+import SalesComposition from "@/components/sections/SalesComposition";
+import StoriesWidget from "@/components/StoriesWidget";
 
 type Corner = "bl" | "br" | "bc";
 type Align = "left" | "center" | "right";
@@ -12,7 +14,10 @@ type Solution = {
   bg: string;
   /** elemento por cima do fundo; opcional (soluções só-fundo não têm) */
   el?: string;
-  /** origem da entrada do elemento (a saída é o inverso); só com `el` */
+  /** widget de Stories do Instagram no lugar do `el`; recebe as mesmas
+   *  animações de entrada/shake via .sol-el / .sol-el-wrap */
+  stories?: boolean;
+  /** origem da entrada do elemento (a saída é o inverso); só com `el`/`stories` */
   enter?: { x?: string; y?: string };
   align: Align; // alinhamento do título grande
   corner: Corner; // canto do descritivo
@@ -52,11 +57,11 @@ const SOLUTIONS: Solution[] = [
     key: "audiovisual",
     title: "Audiovisual",
     bg: "/solucoes/fundo-audiovisual.jpg",
-    el: "/solucoes/audiovisual.png",
+    // showcase = widget de Stories do Instagram (@lapduz_), no lugar do png
+    stories: true,
     enter: { y: "12%" }, // baixo -> cima
     align: "right",
     corner: "br",
-    objPosMobile: "object-[41%_center]", // mobile: traz o elemento mais pra direita
     desc: (
       <>
         Conteúdo <strong>premium</strong>, <strong>estratégico</strong> e feito
@@ -86,7 +91,7 @@ const SOLUTIONS: Solution[] = [
     key: "salespage",
     title: "Sales Page",
     bg: "/solucoes/salespage-fundo.png",
-    el: "/solucoes/salespage.webm",
+    // sem `el`: o showcase é a composição LUMIVIE (vários elementos flutuantes)
     enter: { x: "12%" }, // direita -> esquerda
     align: "right",
     corner: "br",
@@ -150,10 +155,27 @@ const EXIT = 1; // duração da saída
 const HOLD = 1; // respiro parado, totalmente visível
 const GAP = 0.3; // respiro entre "anterior sumiu" e "próxima entra"
 const SPREAD = 22; // px de "tracking" inicial por letra, por distância do centro
-// translateZ inicial do título "Soluções". Maior que a perspective (900px do
-// .sol-intro) → começa ATRÁS da câmera (invisível) e atravessa o plano vindo
-// pra frente, dando a sensação de passar pela câmera antes de assentar.
-const INTRO_Z = 1100;
+// translateZ inicial do título "Soluções": entra com um zoom 3D suave (vem um
+// pouco à frente) combinado com fade de opacidade.
+const INTRO_Z = 460;
+
+/** Quebra o título em palavras (nowrap) e cada letra num <span class="char">
+ *  pra animar. breakWords=true põe cada palavra numa linha (<br>). */
+function titleChars(title: string, breakWords = false) {
+  return title.split(" ").flatMap((word, wi, words) => {
+    const w = (
+      <span key={`w${wi}`} className="inline-block whitespace-nowrap">
+        {word.split("").map((ch, j) => (
+          <span key={j} aria-hidden className="char inline-block">
+            {ch}
+          </span>
+        ))}
+      </span>
+    );
+    if (wi >= words.length - 1) return [w];
+    return breakWords ? [w, <br key={`br${wi}`} />] : [w, " "];
+  });
+}
 
 export default function Solucoes() {
   const ref = useRef<HTMLDivElement>(null);
@@ -173,6 +195,8 @@ export default function Solucoes() {
       desc: slide.querySelector<HTMLElement>(".sol-desc"),
       line: slide.querySelector<HTMLElement>(".sol-line"),
       chars: gsap.utils.toArray<HTMLElement>(".char", slide),
+      // elementos flutuantes do showcase (só o salespage tem)
+      floats: gsap.utils.toArray<HTMLElement>(".sales-float", slide),
     }));
 
     const isMobile = window.innerWidth < 768;
@@ -194,24 +218,30 @@ export default function Solucoes() {
       gsap.set(L.bg, { opacity: i === 0 ? 1 : 0 });
       gsap.set(L.desc, { opacity: 0 });
       gsap.set(L.chars, { opacity: 0 });
-      if (L.el) gsap.set(L.el, { opacity: 0, ...origin(i) });
+      if (L.el) gsap.set(L.el, { autoAlpha: 0, ...origin(i) });
       if (L.line) gsap.set(L.line, { opacity: 0 });
+      if (L.floats.length) gsap.set(L.floats, { opacity: 0, y: 28 });
     });
-    gsap.set(introChars, { z: INTRO_Z }); // entra pelo zoom 3D via ST própria (antes do pin)
+    // estado inicial do "Soluções": à frente (z) e invisível (opacity 0).
+    gsap.set(introChars, { z: INTRO_Z, opacity: 0 });
 
-    // ENTRADA do "Soluções": zoom 3D (z alto -> 0) numa ScrollTrigger PRÓPRIA,
-    // que começa ANTES do pin — assim o título já vem entrando enquanto a seção
-    // ainda está chegando, em vez de só quando pina.
+    // PRE-ROLL da intro "Soluções": entra ANTES do pin, conforme a seção se
+    // aproxima (top da seção indo de 70% da viewport até o topo). Assim o título
+    // já vem surgindo um pouco antes de você chegar na seção; quando o pin
+    // engata, ele já está totalmente visível e a timeline pinada só segura/solta.
+    // É uma ScrollTrigger própria que mexe SÓ em opacity+z das letras — não toca
+    // nos fundos, então não traz de volta o flash verde da 1ª carga.
     gsap.fromTo(
       introChars,
-      { z: INTRO_Z },
+      { z: INTRO_Z, opacity: 0 },
       {
         z: 0,
-        ease: "power3.out",
+        opacity: 1,
+        ease: "none",
         stagger: { each: 0.06, from: "start" },
         scrollTrigger: {
           trigger: root,
-          start: "top 75%",
+          start: "top 70%",
           end: "top top",
           scrub: true,
           invalidateOnRefresh: true,
@@ -254,8 +284,16 @@ export default function Solucoes() {
       if (L.el)
         tl.fromTo(
           L.el,
-          { opacity: 0, ...origin(i) },
-          { opacity: 1, x: 0, y: 0, duration: 1, ease: "power2.out" },
+          { autoAlpha: 0, ...origin(i) },
+          { autoAlpha: 1, x: 0, y: 0, duration: 1, ease: "power2.out" },
+          t
+        );
+      // showcase: cada elemento aparece SEPARADAMENTE (stagger), subindo
+      if (L.floats.length)
+        tl.fromTo(
+          L.floats,
+          { opacity: 0, y: 28 },
+          { opacity: 1, y: 0, duration: 0.8, ease: "power2.out", stagger: 0.12 },
           t
         );
     };
@@ -279,14 +317,18 @@ export default function Solucoes() {
       tl.to(L.desc, { opacity: 0, duration: 1, ease: "none" }, t);
       if (L.line) tl.to(L.line, { opacity: 0, duration: 1, ease: "none" }, t);
       if (L.el)
-        tl.to(L.el, { opacity: 0, ...origin(i), duration: 1, ease: "power2.in" }, t);
+        tl.to(L.el, { autoAlpha: 0, ...origin(i), duration: 1, ease: "power2.in" }, t);
+      if (L.floats.length)
+        tl.to(L.floats, { opacity: 0, y: 28, duration: 0.6, ease: "power2.in", stagger: 0.08 }, t);
     };
 
-    // SEQUÊNCIA encadeada (sem sobreposição): segura o intro, ele SAI por
-    // completo, só então a 1ª solução ENTRA — e assim por diante.
-    let t = HOLD; // segura o "Soluções" antes de sair
+    // SEQUÊNCIA encadeada (sem sobreposição). A intro "Soluções" já ENTROU no
+    // pre-roll (ScrollTrigger acima, antes do pin). Aqui na timeline pinada ela
+    // só SEGURA visível e depois SAI com tracking — o resto da sequência segue
+    // exatamente nos mesmos pontos de antes.
+    let t = ENTER + HOLD; // segura visível (mesmo tempo) antes de sair
 
-    // intro "Soluções" sai COM tracking (o z já foi resolvido pela ST pré-pin)
+    // intro "Soluções" sai COM tracking
     tl.to(
       introChars,
       {
@@ -344,6 +386,15 @@ export default function Solucoes() {
     const bgS = setters(bgs);
     const textS = setters(texts);
     const elS = setters(elWraps);
+    // showcase (salespage): cada elemento flutua com sua própria profundidade
+    // (data-depth) — assim parecem "floating elements" independentes.
+    const floatS = gsap.utils
+      .toArray<HTMLElement>(".sales-float-wrap", root)
+      .map((el) => ({
+        x: gsap.quickSetter(el, "x", "px"),
+        y: gsap.quickSetter(el, "y", "px"),
+        depth: parseFloat(el.dataset.depth || "1"),
+      }));
 
     let removeMove: (() => void) | undefined;
     let tick: (() => void) | undefined;
@@ -353,8 +404,12 @@ export default function Solucoes() {
       gsap.set(bgs, { scale: 1.06, transformOrigin: "center" });
       // overscan também nos elementos: eles se movem MAIS que o fundo
       // (DEPTH.el=1), então sem folga o shake revela a borda da imagem (corte
-      // seco). A escala dá margem pra imagem cobrir o deslocamento.
-      gsap.set(elWraps, { scale: 1.08, transformOrigin: "center" });
+      // seco). A escala dá margem pra imagem cobrir o deslocamento. Pula o card
+      // de stories (data-no-overscan): é menor e escalar tiraria ele do lugar.
+      const overscanWraps = elWraps.filter(
+        (w) => w.dataset.noOverscan !== "true"
+      );
+      gsap.set(overscanWraps, { scale: 1.08, transformOrigin: "center" });
 
       // shake idle (amplitude-base; cada camada multiplica pela profundidade)
       gsap
@@ -380,6 +435,7 @@ export default function Solucoes() {
         bgS.forEach((s) => (s.x(bx * DEPTH.bg), s.y(by * DEPTH.bg)));
         textS.forEach((s) => (s.x(bx * DEPTH.text), s.y(by * DEPTH.text)));
         elS.forEach((s) => (s.x(bx * DEPTH.el), s.y(by * DEPTH.el)));
+        floatS.forEach((s) => (s.x(bx * s.depth), s.y(by * s.depth)));
       };
       gsap.ticker.add(tick);
     }, root);
@@ -453,49 +509,31 @@ export default function Solucoes() {
                   </div>
                 )}
 
-                {/* título grande ao fundo (z1) — char by char */}
-                <div
-                  className={`sol-title pointer-events-none absolute inset-0 z-[1] flex px-[6vw] ${
-                    s.key === "salespage"
-                      ? // mobile: título no canto inferior-esquerdo; desktop: como era
-                        "items-end justify-start pb-[20vh] md:items-center md:justify-end md:pb-0"
-                      : `items-center ${ALIGN[s.align].justify}`
-                  }`}
-                >
-                  <h3
-                    aria-label={s.title}
-                    className={`font-display text-[16vw] font-light leading-none text-cream/90 md:text-[13vw] ${
-                      s.key === "salespage" ? "text-left md:text-right" : ALIGN[s.align].text
-                    }`}
+                {/* título grande ao fundo (z1) — char by char (não-salespage).
+                    Audiovisual (s.stories) no MOBILE: o widget cobre quase toda
+                    a tela, então o título não cabe atrás. Empurro pra cima do
+                    widget na faixa inferior (z acima do widget), centralizado e
+                    menor — desktop fica como sempre (texto grande ao fundo). */}
+                {s.key !== "salespage" && (
+                  <div
+                    className={
+                      s.stories
+                        ? "sol-title pointer-events-none absolute inset-x-0 bottom-[18vh] z-[3] flex justify-center px-[6vw] md:top-0 md:bottom-0 md:z-[1] md:items-center md:justify-end"
+                        : `sol-title pointer-events-none absolute inset-0 z-[1] flex items-center px-[6vw] ${ALIGN[s.align].justify}`
+                    }
                   >
-                    {/* quebra só ENTRE palavras: cada palavra é um bloco nowrap
-                        (as letras não quebram no meio); o espaço entre palavras
-                        é o único ponto de quebra. As letras seguem .char p/ animar. */}
-                    {s.title.split(" ").flatMap((word, wi, words) => {
-                      const w = (
-                        <span
-                          key={`w${wi}`}
-                          className="inline-block whitespace-nowrap"
-                        >
-                          {word.split("").map((ch, j) => (
-                            <span
-                              key={j}
-                              aria-hidden
-                              className="char inline-block"
-                            >
-                              {ch}
-                            </span>
-                          ))}
-                        </span>
-                      );
-                      return wi < words.length - 1
-                        ? s.key === "salespage"
-                          ? [w, " ", <br key={`br${wi}`} className="md:hidden" />]
-                          : [w, " "]
-                        : [w];
-                    })}
-                  </h3>
-                </div>
+                    <h3
+                      aria-label={s.title}
+                      className={
+                        s.stories
+                          ? "font-display text-[11vw] font-light leading-none text-cream/90 text-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)] md:text-[13vw] md:text-right md:drop-shadow-none"
+                          : `font-display text-[16vw] font-light leading-none text-cream/90 md:text-[13vw] ${ALIGN[s.align].text}`
+                      }
+                    >
+                      {titleChars(s.title)}
+                    </h3>
+                  </div>
+                )}
 
                 {/* elemento que passa por cima do título (z2). O wrapper recebe
                     o parallax; a <img> recebe a animação de entrada do scroll.
@@ -528,26 +566,83 @@ export default function Solucoes() {
                   </div>
                 )}
 
-                {/* descritivo no canto — z acima do elemento (z2) pra nunca
-                    ser coberto pela imagem */}
-                <div
-                  className={`sol-desc absolute z-[5] max-w-[16rem] md:max-w-sm ${
-                    s.key === "salespage"
-                      ? // mobile: canto inferior-esquerdo, à esquerda; desktop: canto direito
-                        "bottom-[6vh] left-[6vw] text-left md:bottom-[9vh] md:left-auto md:right-[6vw] md:text-right"
-                      : s.corner === "bl"
-                      ? "bottom-[9vh] left-[6vw] text-left"
-                      : s.corner === "br"
-                      ? "bottom-[9vh] right-[6vw] text-right"
-                      : // bc: centralizado horizontal (mx-auto, sem transform) na
-                        // mesma linha de baixo dos demais
-                        "bottom-[9vh] left-0 right-0 mx-auto text-center"
-                  }`}
-                >
-                  <p className="font-display text-sm font-medium leading-relaxed text-cream/85 md:text-base">
-                    {s.desc}
-                  </p>
-                </div>
+                {/* showcase audiovisual: widget de Stories do Instagram dentro de
+                    um "celular". Usa .sol-el-wrap (shake) e .sol-el (entrada).
+                    pointer-events-auto no card deixa o widget clicável; quando a
+                    solução não está ativa o .sol-el fica com autoAlpha 0
+                    (visibility:hidden), então o widget some E para de capturar
+                    cliques — sem isso, o widget invisível interceptaria toques de
+                    outras soluções. */}
+                {s.stories && (
+                  <div
+                    data-no-overscan="true"
+                    className="sol-el-wrap pointer-events-none absolute inset-0 z-[2] flex items-start justify-center pt-[15vh] will-change-transform md:justify-start md:pl-[6vw]"
+                  >
+                    <div className="sol-el pointer-events-auto aspect-[9/16] h-[70vh] max-h-[620px] md:h-[82vh] md:max-h-[860px]">
+                      <StoriesWidget className="shadow-2xl shadow-black/40" />
+                    </div>
+                  </div>
+                )}
+
+                {/* showcase LUMIVIE (só salespage): composição na METADE ESQUERDA
+                    no desktop (mobile: centralizada, ocupando tudo) */}
+                {s.key === "salespage" && (
+                  <div className="pointer-events-none absolute inset-0 z-[2] flex items-start justify-center pt-[18vh] md:items-center md:pt-0 md:w-1/2">
+                    <SalesComposition />
+                  </div>
+                )}
+
+                {/* salespage: título + descritivo.
+                    - Mobile: embaixo da composição, centralizado (a composição
+                      encolhe e sobe pra abrir espaço — ver container acima).
+                    - Desktop: metade DIREITA, alinhado à direita.
+                    Bloco ÚNICO responsivo: o h3 leva .sol-title e o <p> .sol-desc
+                    pra entrarem no shake e nas animações de entrada (char a char
+                    / fade) — sem duplicar .sol-desc/.char entre mobile e desktop. */}
+                {s.key === "salespage" && (
+                  <div className="pointer-events-none absolute inset-0 z-[3] flex flex-col items-center justify-end px-[6vw] pb-[6vh] text-center md:left-1/2 md:items-end md:justify-center md:pb-0 md:pl-[3vw] md:pr-[6vw] md:text-right">
+                    <h3
+                      aria-label="Sales Page"
+                      className="sol-title font-display text-[12vw] font-light leading-[0.95] text-cream/90 md:text-[9vw] md:leading-[0.92]"
+                    >
+                      {titleChars("Sales Page")}
+                    </h3>
+                    <p className="sol-desc mt-3 max-w-md font-display text-sm font-medium leading-relaxed text-cream/85 md:mt-8 md:text-base">
+                      {s.desc}
+                    </p>
+                  </div>
+                )}
+
+                {/* descritivo no canto — z acima do elemento (z2). Salespage usa
+                    o descritivo da coluna direita, então aqui pula.
+                    Audiovisual no MOBILE: vai pra logo abaixo do título, ainda
+                    sobre o widget (pointer-events-none pra não bloquear cliques
+                    no story). Desktop mantém o canto. */}
+                {s.key !== "salespage" && (
+                  <div
+                    className={
+                      s.stories
+                        ? "sol-desc pointer-events-none absolute bottom-[9vh] left-0 right-0 z-[5] mx-auto max-w-[18rem] px-[6vw] text-center md:pointer-events-auto md:left-auto md:right-[6vw] md:mx-0 md:max-w-sm md:px-0 md:text-right"
+                        : `sol-desc absolute z-[5] max-w-[16rem] md:max-w-sm ${
+                            s.corner === "bl"
+                              ? "bottom-[9vh] left-[6vw] text-left"
+                              : s.corner === "br"
+                              ? "bottom-[9vh] right-[6vw] text-right"
+                              : "bottom-[9vh] left-0 right-0 mx-auto text-center"
+                          }`
+                    }
+                  >
+                    <p
+                      className={
+                        s.stories
+                          ? "font-display text-sm font-medium leading-relaxed text-cream/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] md:text-base md:text-cream/85 md:drop-shadow-none"
+                          : "font-display text-sm font-medium leading-relaxed text-cream/85 md:text-base"
+                      }
+                    >
+                      {s.desc}
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
 

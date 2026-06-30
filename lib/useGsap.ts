@@ -10,18 +10,6 @@ if (typeof window !== "undefined") {
   // o ScrollTrigger recalcular os pins e te jogar pra outra seção (pulos ao
   // scrollar, principalmente pra cima). Ignorar o resize mobile elimina isso.
   ScrollTrigger.config({ ignoreMobileResize: true });
-
-  // Primeira visita: vídeo do hero / imagens pesadas terminam de carregar
-  // DEPOIS que os ScrollTriggers já calcularam suas posições, deslocando as
-  // seções de baixo. Isso deixa a intro das Soluções "presa" no estado inicial
-  // (fundo verde, letras invisíveis) até algo forçar um recálculo. Um refresh
-  // após o load realinha tudo.
-  const refreshAll = () => ScrollTrigger.refresh();
-  if (document.readyState === "complete") {
-    requestAnimationFrame(refreshAll);
-  } else {
-    window.addEventListener("load", refreshAll, { once: true });
-  }
 }
 
 /**
