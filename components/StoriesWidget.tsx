@@ -14,7 +14,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const STORIES = [
   "/stories/novo-marketing.mp4",
-  "/stories/acelera-conexoes.mp4",
   "/stories/clax.mp4",
   "/stories/lilian-glow.mp4",
 ];

@@ -187,6 +187,7 @@ export default function Solucoes() {
     const pinEl = root.querySelector<HTMLElement>(".sol-pin");
     const slides = gsap.utils.toArray<HTMLElement>(".sol-slide", root);
     const introChars = gsap.utils.toArray<HTMLElement>(".intro-char", root);
+    const introBox = root.querySelector<HTMLElement>(".sol-intro");
     if (!pinEl || !slides.length) return;
 
     const layers = slides.map((slide) => ({
@@ -323,16 +324,20 @@ export default function Solucoes() {
     };
 
     // SEQUÊNCIA encadeada (sem sobreposição). A intro "Soluções" já ENTROU no
-    // pre-roll (ScrollTrigger acima, antes do pin). Aqui na timeline pinada ela
-    // só SEGURA visível e depois SAI com tracking — o resto da sequência segue
-    // exatamente nos mesmos pontos de antes.
-    let t = ENTER + HOLD; // segura visível (mesmo tempo) antes de sair
+    // pre-roll (ScrollTrigger acima, antes do pin). Como a entrada é externa,
+    // aqui ela só SEGURA por HOLD (não ENTER+HOLD — senão o hold dobra e demora
+    // demais pra sair, já que a entrada não ocupa mais tempo na timeline).
+    let t = HOLD; // segura visível antes de sair
 
-    // intro "Soluções" sai COM tracking
+    // intro "Soluções" sai: FADE no container (.sol-intro) + tracking (x) nas
+    // letras. A opacidade das LETRAS é controlada SÓ pelo pre-roll (entrada); se
+    // o exit também mexesse em char.opacity, os dois tweens scrubbados brigariam
+    // pela mesma prop e a saída "sumia sem fade".
+    if (introBox)
+      tl.to(introBox, { opacity: 0, duration: 0.6, ease: "power3.in" }, t);
     tl.to(
       introChars,
       {
-        opacity: 0,
         x: charX(introChars),
         duration: 0.6,
         ease: "power3.in",
@@ -455,7 +460,7 @@ export default function Solucoes() {
             {SOLUTIONS.map((s, i) => (
               <div
                 key={s.key}
-                className="sol-slide absolute inset-0"
+                className="sol-slide pointer-events-none absolute inset-0"
                 style={{ zIndex: i + 1 }}
               >
                 {/* fundo (z0) */}
@@ -466,7 +471,7 @@ export default function Solucoes() {
                   aria-hidden
                   draggable={false}
                   decoding="async"
-                  className="sol-bg absolute inset-0 z-0 h-full w-full object-cover"
+                  className="sol-bg pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
                 />
 
                 {/* linha-gráfico (trim path em loop) — acima do fundo (z0,
@@ -622,8 +627,8 @@ export default function Solucoes() {
                   <div
                     className={
                       s.stories
-                        ? "sol-desc pointer-events-none absolute bottom-[9vh] left-0 right-0 z-[5] mx-auto max-w-[18rem] px-[6vw] text-center md:pointer-events-auto md:left-auto md:right-[6vw] md:mx-0 md:max-w-sm md:px-0 md:text-right"
-                        : `sol-desc absolute z-[5] max-w-[16rem] md:max-w-sm ${
+                        ? "sol-desc pointer-events-none absolute bottom-[9vh] left-0 right-0 z-[5] mx-auto max-w-[18rem] px-[6vw] text-center md:left-auto md:right-[6vw] md:mx-0 md:max-w-sm md:px-0 md:text-right"
+                        : `sol-desc pointer-events-none absolute z-[5] max-w-[16rem] md:max-w-sm ${
                             s.corner === "bl"
                               ? "bottom-[9vh] left-[6vw] text-left"
                               : s.corner === "br"
